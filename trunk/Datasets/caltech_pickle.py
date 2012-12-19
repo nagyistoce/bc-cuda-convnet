@@ -18,13 +18,13 @@ for line in batchMetaLine:
     for batchItem in batchItems:
         item = batchItem.split(" ")
         labels.append(item[1])
-        image = Image.open(item[0]).crop((0, 0, 200, 200))
+        image = Image.open(item[0]).crop((0, 0, 32, 32))
         if image.mode is not 'RGB':
             image = image.convert('RGB')
         images.append(n.asarray(image).flatten())
     dataDic = dict()
-    dataDic['data'] = n.array(images).T
-    dataDic['labels'] = n.array(labels)
+    dataDic['data'] = n.array(images, dtype=n.uint8).T
+    dataDic['labels'] = n.array(labels, dtype=n.uint8)
     print dataDic['data'].shape      
     pickledBatch = open("./Caltech101/data_batch_%i" % batchNumber, "wb")
     cPickle.dump(dataDic, pickledBatch, protocol=cPickle.HIGHEST_PROTOCOL)
