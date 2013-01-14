@@ -9,37 +9,31 @@ import numpy as n
 metaFile = open("data.meta", "r")
 batchMetaLine = metaFile.read().splitlines()
 batchNumber = 0
+META_DATA = dict()
 for line in batchMetaLine:
     metaData = line.split(" ")
     batchFile = open(metaData[1], "r")
     batchItems = batchFile.read().splitlines()
+    META_DATA['data_batch_%i' % batchNumber] = dict()
     images = []
     labels = []
     for batchItem in batchItems:
         item = batchItem.split(" ")
+        images.append(item[0])
         labels.append(item[1])
-        image = Image.open(item[0]).crop((0, 0, 32, 32))
-        if image.mode is not 'RGB':
-            image = image.convert('RGB')
-        images.append(n.asarray(image).flatten())
-    dataDic = dict()
-    dataDic['data'] = n.array(images, dtype=n.uint8).T
-    dataDic['labels'] = n.array(labels, dtype=n.uint8)
-    print dataDic['data'].shape      
-    pickledBatch = open("./Caltech101/data_batch_%i" % batchNumber, "wb")
-    cPickle.dump(dataDic, pickledBatch, protocol=cPickle.HIGHEST_PROTOCOL)
-    pickledBatch.close()
+    META_DATA['data_batch_%i' % batchNumber]['data'] = n.array(images)
+    META_DATA['data_batch_%i' % batchNumber]['labels'] = n.array(labels, dtype=n.uint8)
     batchNumber += 1
-
+    batchFile.close()
+    
 labels_meta = open("labels.meta", "r")
 meta_file = open("./Caltech101/batches.meta", "wb")
-meta_data = dict()
-meta_data['num_cases_per_batch'] = dataDic['data'].shape[1]
-
+META_DATA['num_cases_per_batch'] = metaData[0]
 label_names = []
 for label in labels_meta:
     label_names.append(label)
-meta_data['label_names'] = n.array(label_names)
-cPickle.dump(meta_data, meta_file, protocol=cPickle.HIGHEST_PROTOCOL)
-meta_file.close()
+META_DATA['label_names'] = n.array(label_names)
 
+cPickle.dump(META_DATA, meta_file, protocol=cPickle.HIGHEST_PROTOCOL)
+meta_file.close()
+labels_meta.close()
