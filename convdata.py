@@ -26,20 +26,32 @@ from data import *
 import numpy.random as nr
 import numpy as n
 import random as r
-import util  
-  
-class CALTECH101DataProvider(LabeledMemoryDataProvider):
+import cPickle
+import Image
+ 
+class CALTECH101DataProvider(LabeledDataProvider):
     def __init__(self, data_dir, batch_range, init_epoch=1, init_batchnum=None, dp_params={}, test=False):
-        LabeledMemoryDataProvider.__init__(self, data_dir, batch_range, init_epoch, init_batchnum, dp_params, test)
+        LabeledDataProvider.__init__(self, data_dir, batch_range, init_epoch, init_batchnum, dp_params, test)
         self.num_colors = 3
-        self.img_size = 200     
-        for d in self.data_dic:
-            # This converts the data matrix to single precision and makes sure that it is C-ordered
-            d['data'] = n.require(d['data'], dtype=n.single, requirements='C')
-            d['labels'] = n.require(d['labels'].reshape((1, d['data'].shape[1])), dtype=n.single, requirements='C') 
+        self.img_size = 32
+        batch_file = open(data_dir + '/batches.meta', 'rb')
+        self.batch_dict = cPickle.load(batch_file)
+        batch_file.close()
                 
     def get_next_batch(self):
-        epoch, batchnum, datadic = LabeledMemoryDataProvider.get_next_batch(self)
+        datadic = dict(); images = []; labels = []
+        for i in range(int(self.batch_dict['num_cases_per_batch'])):
+            image = Image.open(self.batch_dict['data_batch_%i' % self.curr_batchnum]['data'][i]).crop((0, 0, 32, 32))
+            if image.mode is not 'RGB':
+                image = image.convert('RGB')
+            images.append(n.asarray(image).flatten())
+            labels.append(self.batch_dict['data_batch_%i' % self.curr_batchnum]['labels'][i])
+        datadic['data'] = n.array(images, dtype=n.single, order='C').T
+        datadic['labels'] = n.array(labels, dtype=n.single, order='C')
+        datadic['data'] = n.require(datadic['data'], dtype=n.single, requirements='C')
+        datadic['labels'] = n.require(datadic['labels'].reshape((1, datadic['data'].shape[1])), dtype=n.single, requirements='C')
+        epoch, batchnum = self.curr_epoch, self.curr_batchnum
+        self.advance_batch()
         return epoch, batchnum, [datadic['data'], datadic['labels']]
         
     # Returns the dimensionality of the two data matrices returned by get_next_batch
