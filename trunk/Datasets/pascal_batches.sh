@@ -2,7 +2,7 @@
 
 batches_count=5
 
-path=/home/milan/Desktop/CNNMM/Projecting/cuda-convnet-read-only/Datasets/PASCAL
+path=`pwd`/PASCAL
 files=`find $path/Annotations -name '*.xml'`
 for item in $files; do
     tmp_item=`echo $item|sed s/\.xml$/.jpg/g|sed s/Annotations/JPEGImages/g`

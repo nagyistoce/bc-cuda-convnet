@@ -15,7 +15,7 @@ do
 done
 
 i=0
-find /home/milan/Desktop/CNNMM/Projecting/cuda-convnet-read-only/Datasets/Caltech101 -name '*.jpg' > tmp.txt
+find `pwd`/Caltech101 -name '*.jpg' > tmp.txt
 classes=`ls -l ./Caltech101/ | grep ^d | tr -s ' ' ':' | cut -d ':' -f 9 | tail -n +2`
 for class in $classes; do
     for item in `grep $class < tmp.txt`; do
@@ -39,7 +39,7 @@ ls -l --full-time ./Caltech101/ | grep ^d | tr -s ' ' '~' | cut -d '~' -f 9 > la
 
 python caltech_pickle.py
 
-rm -f $name*
+rm $name*
 rm -f data.meta
 rm -f labels.meta
 
