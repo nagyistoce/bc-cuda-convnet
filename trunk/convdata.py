@@ -33,7 +33,7 @@ class CALTECH101DataProvider(LabeledDataProvider):
     def __init__(self, data_dir, batch_range, init_epoch=1, init_batchnum=None, dp_params={}, test=False):
         LabeledDataProvider.__init__(self, data_dir, batch_range, init_epoch, init_batchnum, dp_params, test)
         self.num_colors = 3
-        self.img_size = 32
+        self.img_size = 300
         batch_file = open(data_dir + '/batches.meta', 'rb')
         self.batch_dict = cPickle.load(batch_file)
         batch_file.close()
@@ -41,7 +41,7 @@ class CALTECH101DataProvider(LabeledDataProvider):
     def get_next_batch(self):
         datadic = dict(); images = []; labels = []
         for i in range(int(self.batch_dict['num_cases_per_batch'])):
-            image = Image.open(self.batch_dict['data_batch_%i' % self.curr_batchnum]['data'][i]).crop((0, 0, 32, 32))
+            image = Image.open(self.batch_dict['data_batch_%i' % self.curr_batchnum]['data'][i]).crop((0, 0, self.img_size, self.img_size))
             if image.mode is not 'RGB':
                 image = image.convert('RGB')
             images.append(n.asarray(image).flatten())
@@ -58,6 +58,9 @@ class CALTECH101DataProvider(LabeledDataProvider):
     # idx is the index of the matrix. 
     def get_data_dims(self, idx=0):
         return self.img_size**2 * self.num_colors if idx == 0 else 1
+        
+    def get_plottable_data(self, data):
+        return n.require(data.T.reshape(data.shape[1], 3, self.img_size, self.img_size).swapaxes(1,3).swapaxes(1,2) / 255.0, dtype=n.single)
             
 class CIFARDataProvider(LabeledMemoryDataProvider):
     def __init__(self, data_dir, batch_range, init_epoch=1, init_batchnum=None, dp_params={}, test=False):
