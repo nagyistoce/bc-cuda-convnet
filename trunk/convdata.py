@@ -33,7 +33,7 @@ class CALTECH101DataProvider(LabeledDataProvider):
     def __init__(self, data_dir, batch_range, init_epoch=1, init_batchnum=None, dp_params={}, test=False):
         LabeledDataProvider.__init__(self, data_dir, batch_range, init_epoch, init_batchnum, dp_params, test)
         self.num_colors = 3
-        self.img_size = 300
+        self.img_size = 140
         batch_file = open(data_dir + '/batches.meta', 'rb')
         self.batch_dict = cPickle.load(batch_file)
         batch_file.close()
@@ -41,9 +41,11 @@ class CALTECH101DataProvider(LabeledDataProvider):
     def get_next_batch(self):
         datadic = dict(); images = []; labels = []
         for i in range(int(self.batch_dict['num_cases_per_batch'])):
-            image = Image.open(self.batch_dict['data_batch_%i' % self.curr_batchnum]['data'][i]).crop((0, 0, self.img_size, self.img_size))
+            image = Image.open(self.batch_dict['data_batch_%i' % self.curr_batchnum]['data'][i])
             if image.mode is not 'RGB':
                 image = image.convert('RGB')
+            image.thumbnail((140, 140), Image.ANTIALIAS)
+            image = image.crop((0, 0, self.img_size, self.img_size))
             images.append(n.asarray(image).flatten())
             labels.append(self.batch_dict['data_batch_%i' % self.curr_batchnum]['labels'][i])
         datadic['data'] = n.array(images, dtype=n.single, order='C').T
