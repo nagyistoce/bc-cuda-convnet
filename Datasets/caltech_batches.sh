@@ -16,9 +16,9 @@ done
 
 i=0
 find `pwd`/Caltech101 -name '*.jpg' > tmp.txt
-classes=`ls -l ./Caltech101/ | grep ^d | tr -s ' ' ':' | cut -d ':' -f 9 | tail -n +2`
+classes=`ls -l ./Caltech101/ | grep ^d | tr -s ' ' '~' | cut -d '~' -f 9`
 for class in $classes; do
-    for item in `grep $class < tmp.txt`; do
+    for item in `grep -e /$class/ < tmp.txt`; do
         echo "$item $i" >> tmp1.txt
     done
     ((i=i+1))
@@ -35,7 +35,6 @@ rm tmp1.txt
 
 wc -l $name* |sed 's/^ *//' | head -n -2 > data.meta
 ls -l --full-time ./Caltech101/ | grep ^d | tr -s ' ' '~' | cut -d '~' -f 9 > labels.meta
-
 
 python caltech_pickle.py
 
