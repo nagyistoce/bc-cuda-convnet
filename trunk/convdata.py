@@ -28,11 +28,12 @@ import numpy as n
 import random as r
 import cPickle
 import Image
+import ImageOps
  
 class CALTECH101DataProvider(LabeledDataProvider):
     def __init__(self, data_dir, batch_range, init_epoch=1, init_batchnum=None, dp_params={}, test=False):
         LabeledDataProvider.__init__(self, data_dir, batch_range, init_epoch, init_batchnum, dp_params, test)
-        self.num_colors = 3
+        self.num_colors = 1
         self.img_size = 140
         batch_file = open(data_dir + '/batches.meta', 'rb')
         self.batch_dict = cPickle.load(batch_file)
@@ -44,8 +45,9 @@ class CALTECH101DataProvider(LabeledDataProvider):
             image = Image.open(self.batch_dict['data_batch_%i' % self.curr_batchnum]['data'][i])
             if image.mode is not 'RGB':
                 image = image.convert('RGB')
-            image.thumbnail((140, 140), Image.ANTIALIAS)
+            image.thumbnail(( self.img_size, self.img_size), Image.ANTIALIAS)
             image = image.crop((0, 0, self.img_size, self.img_size))
+            image = ImageOps.grayscale(image)
             images.append(n.asarray(image).flatten())
             labels.append(self.batch_dict['data_batch_%i' % self.curr_batchnum]['labels'][i])
         datadic['data'] = n.array(images, dtype=n.single, order='C').T
