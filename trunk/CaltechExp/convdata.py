@@ -176,3 +176,4 @@ class DummyConvNetDataProvider(LabeledDummyDataProvider):
     def get_data_dims(self, idx=0):
         return self.batch_meta['num_vis'] if idx == 0 else 1
         
+
