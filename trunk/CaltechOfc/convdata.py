@@ -47,7 +47,7 @@ class CALTECH101DataProvider(LabeledDataProvider):
                 image = image.convert('RGB')
             image.thumbnail((self.img_size, self.img_size), Image.ANTIALIAS)
             image = image.crop((0, 0, self.img_size, self.img_size))
-            image = ImageOps.grayscale(image)
+            #image = ImageOps.grayscale(image)
             images.append(n.asarray(image).flatten())
             labels.append(self.batch_dict['data_batch_%i' % self.curr_batchnum]['labels'][i])
         datadic['data'] = n.array(images, dtype=n.single, order='C').T
