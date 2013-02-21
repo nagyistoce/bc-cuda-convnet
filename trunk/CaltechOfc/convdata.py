@@ -33,7 +33,7 @@ import ImageOps
 class CALTECH101DataProvider(LabeledDataProvider):
     def __init__(self, data_dir, batch_range, init_epoch=1, init_batchnum=None, dp_params={}, test=False):
         LabeledDataProvider.__init__(self, data_dir, batch_range, init_epoch, init_batchnum, dp_params, test)
-        self.num_colors = 1
+        self.num_colors = 3
         self.img_size = 140
         batch_file = open(data_dir + '/batches.meta', 'rb')
         self.batch_dict = cPickle.load(batch_file)

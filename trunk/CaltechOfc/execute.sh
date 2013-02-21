@@ -15,19 +15,8 @@ python convnet.py   --data-path=./Datasets/CIFAR \
                     --epochs=100
 }
 
-caltech_test(){
-python convnet.py --data-path=./Datasets/Caltech101 \
-                  --save-path=./STORAGE/CALTECH \
-                  --test-range=5-6  \
-                  --train-range=1-4 \
-                  --layer-def=./example-layers/layers-19pct.cfg \
-                  --layer-params=./example-layers/layer-params-19pct.cfg \
-                  --data-provider=caltech101 \
-                  --test-freq=2 \
-                  --epochs=10
-}
 
-caltech_1(){
+caltech(){
 python convnet.py --data-path=./Datasets/Caltech101 \
                   --save-path=./Storage/Caltech_1 \
                   --test-range=5-6  \
@@ -39,18 +28,6 @@ python convnet.py --data-path=./Datasets/Caltech101 \
                   --epochs=10
 }
 
-caltech_2(){
-python convnet.py --data-path=./Datasets/Caltech101 \
-                  --save-path=./Storage/Caltech_2 \
-                  --test-range=1  \
-                  --train-range=0 \
-                  --layer-def=./Datasets/Caltech101/1D.cfg \
-                  --layer-params=./Datasets/Caltech101/1P.cfg \
-                  --data-provider=caltech101 \
-                  --test-freq=15 \
-                  --epochs=100
-}
+caltech
 
-caltech_2
-
-exit 0
+exit
