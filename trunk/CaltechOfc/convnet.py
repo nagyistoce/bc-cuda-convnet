@@ -191,6 +191,7 @@ class ConvNet(IGPUModel):
         
         DataProvider.register_data_provider('caltech101', 'Caltech101', CALTECH101DataProvider)
         DataProvider.register_data_provider('caltech101-cropped', 'Cropped Caltech101', CroppedCALTECH101DataProvider)
+        DataProvider.register_data_provider('caltech101-normalized', 'Normalized Caltech101', NormalizedCALTECH101DataProvider)
         DataProvider.register_data_provider('dummy-cn-n', 'Dummy ConvNet', DummyConvNetDataProvider)
         DataProvider.register_data_provider('cifar', 'CIFAR', CIFARDataProvider)
         DataProvider.register_data_provider('cifar-cropped', 'Cropped CIFAR', CroppedCIFARDataProvider)

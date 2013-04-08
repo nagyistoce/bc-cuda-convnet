@@ -75,7 +75,7 @@ Gradient descent is model optimization algorithm which is trying to fit model pa
 
 Where \(\alpha\) is learning rate which is telling us how big our step will be, derivative term is direction  of steepest descent. Algorithm is implemented with simultaneous update of parameters since updating one parameter affects rest of them. You should try different learning rates for your problem, usually we initialize \(\alpha\) with small number for example 0.001. If we set learning rate too big there is a possibility to overshoot minimum and algorithm may fail to converge or even diverge. With proper(small enough) learning rate fixed, algorithm is guaranteed to converge and not overshoot the minimum because derivatives get smaller as we are approaching to minimum. On the other hand choosing learning rate too small makes algorithm to converge very slowly.
 
-Testing that algorithm is working correctly can be done by plotting cost function  as number of epoch (epoch is one run over training set) done. We should see that cost function is decreasing every iteration. Or we may come up with more automatic way when we sample from cost function and check if we converged. Usually we declare convergence when step is smaller than \(10^{-3}\) but this is state of preference.  We can speed up Gradient descent if we use some data normalization techniques such as Mean normalization and Feature scaling for more details see. 
+Testing that algorithm is working correctly can be done by plotting cost function  as number of epoch (epoch is one run over training set) done. We should see that cost function is decreasing every iteration. Or we may come up with more automatic way when we sample from cost function and check if we converged. Usually we declare convergence when step is smaller than \(10^{-3}\) but this is state of preference.  We can speed up Gradient descent if we use some data normalization techniques such as Mean normalization and Feature scaling for more details see.
 
 Gradient Descent isn't only algorithm to minimize cost function parameters. Here is a list of some more complex algorithms where we usually don't care about learning rate alpha and they are usually faster. Also analytical solution exists, it's called normal equation. It is correct to use it when we don't have many features because it might become very computational intensive. For more details about normal equation see this.
 
@@ -247,6 +247,28 @@ Rule \Rightarrow w_1 &= w_2 \land \delta w_1 = \delta w_2 \\
 \end{aligned}
 \end{equation}
 
+\section{Rectified linear unit}
+
+Rectified linear units are seen as a better alternative to logistic units in recognition tasks. By allowing neural network to get sparse representation of input they are training faster and learning stronger features. They disadvantage is that they have unbounded activation so adding weight penalty is recommended. As Bengion et al. mentioned, there is almost no improvement when using un-supervised pre-training with rectifier activations in contrary to other non-linearities. Meaning that network with rectified linear units is finding better optima. Jarrett et. al. showed that using rectification is crucial to obtain good results in recognition systems. 
+
+\begin{equation}
+\begin{aligned}
+z &=& b + \sum\limits_{i=1}^j w_i x_i \quad
+a &=& \left\{
+  \begin{array}{l l}
+    z & \quad \text{if \(z > 0\)}\\
+    0 & \quad \text{otherwise} 
+  \end{array} \right.
+\end{aligned}
+\end{equation}
+
+\section{Pooling}
+
+Most common pooling operation are maximum and average. Scherer et. al. showed that maximum pooling is superior to average pooling and providing faster learning and better generalization. Boureau et. al. showed pooling dependence on data when we may have recognition problem where maximum nor average pooling will be the best solution. Some convolutional networks doesn't using pooling at all instead they are using stride larger than 1 between filters. I found this idea interesting and do some testing around it as well as comparing maximum and average pooling.
+
+\section{Competitive normalization}
+ BUMP.
+
 \section{What is missing in convolutional neural networks}
 Convolutional neural networks are learning feature representation of objects but during pooling process they are loosing precise spatial information of active features. So they can learn what are parts of human body and then recognize these bodies but they can hardly assign identities to those bodies. Making pool overlapping helps a bit because we have a features duplicated in several pools. This makes us able to inaccurately tell where it is. Another flaw is that they are not able to understand changes in view point position. This leads us to need huge dataset where we are duplicating samples under different scales and orientations.
 
@@ -258,7 +280,7 @@ My experiments will focus on testing variety of techniques which can enhance per
 \section{Caltech101}
 To challenge biological systems and prove for our existing ones usage in real world tasks we are using datasets which are emulating natural environment by containing pictures with variety of objects, backgrounds, positioning, posing and lightning. While humans are easily dealing with this kind of variations it is still challenge for artificial systems. Another problem which is connected to deep learning and generalization is that we don't see what we have learned. So informations which is using our neural network to decide category of object is hidden and might be misleading.
 
-Caltech101 is containing 9144 natural images of size approximately \(300\times200\). Picture are categorized to 102 categories(adding one additional background category) each one is containing about fifty images. The biggest categories are planes, motorbikes and faces. This dataset is available at \url{http://www.vision.caltech.edu/Image_Datasets/Caltech101/}. Here are mentioned some issues with Caltech. 
+Caltech101 is containing 9144 natural images of size approximately \(300\times200\). Picture are categorized to 102 categories(adding one additional background category) each one is containing about fifty images. The biggest categories are planes, motorbikes and faces. Pinto et. al. mentioned some issues with this dataset. 
 
 Standard approaches on this dataset are using fixed number of images in each category for training and testing. Popular number of training images: 1, 3, 5, 10, 15, 20, 30. Popular numbers of testing images: 20, 30. It is also suggested that you should track misclassified samples. The best systems on this dataset are above 60\% classification accuracy. 
 
@@ -277,3 +299,5 @@ Standard approaches on this dataset are using fixed number of images in each cat
 }
 \caption{Example of pictures from Caltech101}
 \end{figure}
+
+
