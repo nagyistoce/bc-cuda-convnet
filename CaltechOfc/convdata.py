@@ -29,38 +29,56 @@ import random as r
 import cPickle
 import Image
 import ImageOps 
+
+##########################################################################################################
+# Caltech101 provider: 8.4.2013, xmunza00@stud.fit.vutbr.cz
+# provider with data normalization
+
+class NormalizedCALTECH101DataProvider(LabeledDataProvider):
+    def __init__(self, data_dir, batch_range, init_epoch=1, init_batchnum=None, dp_params={}, test=False):
+        LabeledDataProvider.__init__(self, data_dir, batch_range, init_epoch, init_batchnum, dp_params, test)
+        batch_file = open(data_dir + '/batches.meta', 'rb')
+        self.batch_dict = cPickle.load(batch_file)
+        batch_file.close()    
+        self.img_size = self.batch_dict['image_size']
+        self.data_mean = self.batch_dict['data_mean']
+        self.std_dev = self.batch_dict['standard_deviation']
+                
+    def get_next_batch(self):
+        datadic = dict()                                               
+        datadic['data'] = n.array(self.batch_dict['data_batch_%i' % self.curr_batchnum]['data'], dtype=n.single, order='C').T
+        datadic['labels'] = n.array(self.batch_dict['data_batch_%i' % self.curr_batchnum]['labels'], dtype=n.single, order='C')
+        datadic['data'] = n.require((datadic['data'] - self.data_mean) / self.std_dev, dtype=n.single, requirements='C')
+        datadic['labels'] = n.require(datadic['labels'].reshape((1, datadic['data'].shape[1])), dtype=n.single, requirements='C')
+        epoch, batchnum = self.curr_epoch, self.curr_batchnum
+        self.advance_batch()
+        return epoch, batchnum, [datadic['data'], datadic['labels']]
+        
+    # Returns the dimensionality of the two data matrices returned by get_next_batch
+    # idx is the index of the matrix. 
+    def get_data_dims(self, idx=0):
+        return self.img_size**2 if idx == 0 else 1
+        
+# end class
+##########################################################################################################
+
  
 ##########################################################################################################
-# Caltech101 provider: 3.4.2013, xmunza00@stud.fit.vutbr.cz
-# grayscale - scale preservation - left/right reflections
+# Caltech101 provider: 8.4.2013, xmunza00@stud.fit.vutbr.cz
+# basic provider - no normalization
 
 class CALTECH101DataProvider(LabeledDataProvider):
     def __init__(self, data_dir, batch_range, init_epoch=1, init_batchnum=None, dp_params={}, test=False):
         LabeledDataProvider.__init__(self, data_dir, batch_range, init_epoch, init_batchnum, dp_params, test)
-        self.img_size = 140
         batch_file = open(data_dir + '/batches.meta', 'rb')
         self.batch_dict = cPickle.load(batch_file)
-        batch_file.close()
+        batch_file.close()    
+        self.img_size = self.batch_dict['image_size']
                 
     def get_next_batch(self):
-        datadic = dict(); images = []; labels = []
-        for i in range(int(self.batch_dict['num_cases_per_batch'])):
-            image = Image.open(self.batch_dict['data_batch_%i' % self.curr_batchnum]['data'][i])
-            if image.mode is not 'RGB':
-                image = image.convert('RGB')
-            # grayscale thumbnail
-            image = ImageOps.grayscale(image)
-            image.thumbnail((self.img_size, self.img_size), Image.ANTIALIAS)
-            image = image.crop((0, 0, self.img_size, self.img_size))
-            images.append(n.asarray(image).flatten())
-            labels.append(self.batch_dict['data_batch_%i' % self.curr_batchnum]['labels'][i])
-            # left/right reflection
-            if not self.test: 
-                images.append(n.fliplr(n.asarray(image)).flatten())
-                labels.append(self.batch_dict['data_batch_%i' % self.curr_batchnum]['labels'][i])
-                                               
-        datadic['data'] = n.array(images, dtype=n.single, order='C').T
-        datadic['labels'] = n.array(labels, dtype=n.single, order='C')
+        datadic = dict();                                               
+        datadic['data'] = n.array(self.batch_dict['data_batch_%i' % self.curr_batchnum]['data'], dtype=n.single, order='C').T
+        datadic['labels'] = n.array(self.batch_dict['data_batch_%i' % self.curr_batchnum]['labels'], dtype=n.single, order='C')
         datadic['data'] = n.require(datadic['data'], dtype=n.single, requirements='C')
         datadic['labels'] = n.require(datadic['labels'].reshape((1, datadic['data'].shape[1])), dtype=n.single, requirements='C')
         epoch, batchnum = self.curr_epoch, self.curr_batchnum
@@ -72,14 +90,11 @@ class CALTECH101DataProvider(LabeledDataProvider):
     def get_data_dims(self, idx=0):
         return self.img_size**2 if idx == 0 else 1
         
-    def get_plottable_data(self, data):
-        return n.require(data.T.reshape(data.shape[1], 3, self.img_size, self.img_size).swapaxes(1,3).swapaxes(1,2) / 255.0, dtype=n.single)
-        
 # end class
 ##########################################################################################################
 
 ##########################################################################################################
-# Caltech101 provider: 3.4.2013, xmunza00@stud.fit.vutbr.cz
+# Caltech101 provider: 4.4.2013, xmunza00@stud.fit.vutbr.cz
 # grayscale - resize - random patches - left-right reflections
 
 class CroppedCALTECH101DataProvider(LabeledDataProvider):
@@ -94,21 +109,22 @@ class CroppedCALTECH101DataProvider(LabeledDataProvider):
     
     def get_next_batch(self):
         datadic = dict(); images = []; labels = []
-        for i in range(int(self.batch_dict['num_cases_per_batch'])):
+        for i in range(int(self.batch_dict['data_batch_%i' % self.curr_batchnum]['num_cases_per_batch'])):
             image = Image.open(self.batch_dict['data_batch_%i' % self.curr_batchnum]['data'][i])
             if image.mode is not 'RGB':
                 image = image.convert('RGB')
             image = image.resize((self.img_size,self.img_size), Image.ANTIALIAS)
             image = ImageOps.grayscale(image)
+            # appending center patch
+            image_cropped = image.crop((self.border_size, self.border_size, self.img_size - self.border_size, self.img_size - self.border_size))
+            images.append(n.asarray(image_cropped).flatten())
+            labels.append(self.batch_dict['data_batch_%i' % self.curr_batchnum]['labels'][i])
             if not self.test:
-                # appending center patch with reflection
-                image_cropped = image.crop((self.border_size, self.border_size, self.img_size - self.border_size, self.img_size - self.border_size))
-                images.append(n.asarray(image_cropped).flatten())
-                labels.append(self.batch_dict['data_batch_%i' % self.curr_batchnum]['labels'][i])
+                # reflection
                 images.append(n.fliplr(n.asarray(image_cropped)).flatten())
                 labels.append(self.batch_dict['data_batch_%i' % self.curr_batchnum]['labels'][i])
                 # appending next 10 random patches from image with reflections
-                for x in xrange(10):
+                for x in xrange(4):
                     # random image patches
                     startY, startX = nr.randint(0,self.border_size*2 + 1), nr.randint(0,self.border_size*2 + 1)
                     endY, endX = startY + self.inner_size, startX + self.inner_size
@@ -119,11 +135,6 @@ class CroppedCALTECH101DataProvider(LabeledDataProvider):
                     if nr.randint(2) == 0:
                         images.append(n.fliplr(n.asarray(image_cropped)).flatten())
                         labels.append(self.batch_dict['data_batch_%i' % self.curr_batchnum]['labels'][i])
-            else:
-                # testing on center patches
-                image_cropped = image.crop((self.border_size, self.border_size, self.img_size - self.border_size, self.img_size - self.border_size))
-                images.append(n.asarray(image_cropped).flatten())
-                labels.append(self.batch_dict['data_batch_%i' % self.curr_batchnum]['labels'][i])
                                               
         datadic['data'] = n.array(images, dtype=n.single, order='C').T
         datadic['labels'] = n.array(labels, dtype=n.single, order='C')
@@ -137,9 +148,6 @@ class CroppedCALTECH101DataProvider(LabeledDataProvider):
     # idx is the index of the matrix. 
     def get_data_dims(self, idx=0):
         return self.inner_size**2 if idx == 0 else 1
-        
-    def get_plottable_data(self, data):
-        return n.require(data.T.reshape(data.shape[1], 3, self.img_size, self.img_size).swapaxes(1,3).swapaxes(1,2) / 255.0, dtype=n.single)
 
 # end class
 ##########################################################################################################

@@ -1,7 +1,10 @@
 #!/bin/sh
 
-# Starts training neural net
+#############################################################################################
+# starts training neural net with desirable parameters
 
+#############################################################################
+# providers
 cifar(){
 python convnet.py   --data-path=./Datasets/CIFAR \
                     --save-path=./STORAGE/CIFAR \
@@ -15,19 +18,36 @@ python convnet.py   --data-path=./Datasets/CIFAR \
                     --epochs=100
 }
 
+caltechNormalized(){
+python convnet.py --data-path=./Datasets/Caltech101 \
+                  --save-path=./Storage/Caltech_8 \
+                  --test-range=3-4 \
+                  --train-range=0-2 \
+                  --layer-def=./Datasets/Caltech101/2D.cfg \
+                  --layer-params=./Datasets/Caltech101/2P.cfg \
+                  --data-provider=caltech101-normalized \
+                  --test-freq=10 \
+                  --epochs=200
+}
 
 caltech(){
 python convnet.py --data-path=./Datasets/Caltech101 \
-                  --save-path=./Storage/Caltech_1 \
-                  --test-range=5-6  \
-                  --train-range=1-4 \
-                  --layer-def=./Datasets/Caltech101/1D.cfg \
-                  --layer-params=./Datasets/Caltech101/1P.cfg \
+                  --save-path=./Storage/Caltech_2_NormRef \
+                  --test-range=3-4 \
+                  --train-range=0-2 \
+                  --layer-def=./Datasets/Caltech101/2D.cfg \
+                  --layer-params=./Datasets/Caltech101/2P.cfg \
                   --data-provider=caltech101 \
-                  --test-freq=15 \
-                  --epochs=10
+                  --test-freq=10 \
+                  --epochs=200
 }
 
-caltech
+#############################################################################
+# start training neural net with desired data provider
+caltechNormalized
 
 exit
+# EXIT
+#############################################################################################
+
+
